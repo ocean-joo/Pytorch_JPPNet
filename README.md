@@ -2,7 +2,6 @@
 JPPNet implementation with Pytorch
 
 ## Citation
-If you use this code for your research, please cite our papers.
 ```
 @article{liang2018look,
   title={Look into Person: Joint Body Parsing \& Pose Estimation Network and a New Benchmark},
