@@ -1,6 +1,5 @@
+import torch
 import torch.nn as nn
-from .ResNet_extract import *
-from .utils import *
 
 class PoseRefineNet(nn.Module) :
     def __init__(self, num_classes) :
