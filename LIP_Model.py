@@ -155,7 +155,86 @@ class ParsingNet(nn.Module) :
     def __init__(self, num_classes) :
         super(ParsingNet, self).__init()
         
-        self.parsing_
+        self.ReLU = nn.ReLU()
+
+        self.parsing_layer1 = nn.Sequential(
+                nn.Conv2d(input_size, 2048, 1, 1),
+                nn.BatchNorm2d(2048))
+        self.parsing_layer2 = nn.Sequential(
+                nn.Conv2d(2048, 512, 1, 1),
+                nn.BatchNorm2d(512),
+                nn.ReLU(),
+                nn.Conv2d(512, 512, 3, dilation=4),
+                nn.BatchNorm2d(512),
+                nn.ReLU(),
+                nn.Conv2d(512, 2048, 1, 1),
+                nn.BatchNorm2d(2048))
+        self.parsing_layer3 = nn.Sequential(
+                nn.Conv2d(2048, 512, 1, 1),
+                nn.BatchNorm2d(512),
+                nn.ReLU(),
+                nn.Conv2d(512, 512, 3, dilation=4),
+                nn.BatchNorm2d(512),
+                nn.ReLU(),
+                nn.Conv2d(512, 2048, 1, 1),
+                nn.BatchNorm2d(2048))
+        self.parsing_layer4 = nn.Sequential(
+                nn.Conv2d(2048, 512, 1, 1),
+                nn.BatchNorm2d(512),
+                nn.ReLU(),
+                nn.Conv2d(512, 512, 3, dilation=4),
+                nn.BatchNorm2d(512),
+                nn.ReLU(),
+                nn.Conv2d(512, 2048, 1, 1),
+                nn.BatchNorm2d(2048))
+
+        self.parsing_layer5 = nn.Sequential(
+                nn.Conv2d(2048, num_classes, 3, dilation=6))
+        self.parsing_layer6 = nn.Conv2d(2048, num_classes, 3, dilation=12)
+        self.parsing_layer7 = nn.Conv2d(2048, num_classes, 3, dilation=18)
+        self.parsing_layer8 = nn.Conv2d(2048, num_classes, 3, dilation=24)
+
+        self.parsing_layer9 = nn.Sequential(
+                nn.Conv2d(2048, 512, 3, 1),
+                nn.ReLU(),
+                nn.Conv2d(512, 256, 3, 1),
+                nn.ReLU())
+
 
     def forward(self, x) :
-        pass
+        # Parsing Layer 1
+        parsing_out1 = self.parsing_layer1(x)
+        
+        # Parsing Layer 2
+        parsing_out2 = self.parsing_layer2(x)
+        
+        # Parsing Layer 3
+        parsing_out = parsing_out1 + parsing_out2
+        parsing_out1 = self.ReLU(parsing_out)
+        parsing_out2 = self.parsing_layer3(parsing_out1)
+
+        # Parsing Layer 4
+        parsing_out = parsing_out1 + parsing_out2
+        parsing_out1 = self.ReLU(parsing_out)
+        parsing_out2 = self.parsing_layer4(parsing_out1)
+
+        # Parsing Layer 5 ~ 8
+        parsing_out = parsing_out1 + parsing_out2
+        parsing_out = self.ReLU(parsing_out)
+
+        parsing_human1 = self.parsing_layer5(parsing_out)
+        parsing_human2 = self.parsing_layer6(parsing_out)
+        parsing_human3 = self.parsing_layer7(parsing_out)
+        parsing_human4 = self.parsing_layer8(parsing_out)
+
+        parsing_human = parsing_human1 + parsing_human2 + parsing_human3 + parsing_human4
+
+        # Parsing Layer 9
+        parsing_out = self.parsing_layer9(parsing_out)
+
+        return parsing_human, parsing_out
+
+
+
+
+
