@@ -16,16 +16,16 @@ class PoseRefineNet(nn.Module) :
 
         # Get pose context 2
         self.pose_refine1 = nn.Sequential(
-                nn.Conv2d(512, 512, 3, 1),
+                nn.Conv2d(512, 512, 3, 1, padding=1),
                 nn.ReLU())
         self.pose_refine2 = nn.Sequential(
-                nn.Conv2d(512, 256, 5, 1),
+                nn.Conv2d(512, 256, 5, 1, padding=2),
                 nn.ReLU())
         self.pose_refine3 = nn.Sequential(
-                nn.Conv2d(256, 256, 7, 1),
+                nn.Conv2d(256, 256, 7, 1, padding=3),
                 nn.ReLU())
         self.pose_refine4 = nn.Sequential(
-                nn.Conv2d(256, 256, 9, 1),
+                nn.Conv2d(256, 256, 9, 1, padding=4),
                 nn.ReLU())
 
         # Get pose map 2
@@ -40,7 +40,7 @@ class PoseRefineNet(nn.Module) :
         parsing_out = self.parsing_remap(parsing_map)
 
         # Concat two remapped feature maps and pose_context
-        pose_out = torch.cat(pose_out, parsing_out, pose_context)
+        pose_out = torch.cat((pose_out, parsing_out, pose_context), 1)
 
         pose_out = self.pose_refine1(pose_out)
         pose_out = self.pose_refine2(pose_out)
@@ -65,33 +65,33 @@ class ParsingRefineNet(nn.Module) :
 
         # Get parsing context 2
         self.parsing_refine1 = nn.Sequential(
-                nn.Conv2d(512, 512, 3, 1),
+                nn.Conv2d(512, 512, 3, 1, padding=1),
                 nn.ReLU())
         self.parsing_refine2 = nn.Sequential(
-                nn.Conv2d(512, 256, 5, 1),
+                nn.Conv2d(512, 256, 5, 1, padding=2),
                 nn.ReLU())
         self.parsing_refine3 = nn.Sequential(
-                nn.Conv2d(256, 256, 7, 1),
+                nn.Conv2d(256, 256, 7, 1, padding=3),
                 nn.ReLU())
         self.parsing_refine4 = nn.Sequential(
-                nn.Conv2d(256, 256, 9, 1),
+                nn.Conv2d(256, 256, 9, 1, padding=4),
                 nn.ReLU())
 
         # Get parsing map 2
         self.parsing_refine5 = nn.Sequential(
                 nn.Conv2d(256, 256, 1, 1),
                 nn.ReLU())
-        self.parsing_atrous1 = nn.Conv2d(256, 20, 3, dilation=6)
-        self.parsing_atrous2 = nn.Conv2d(256, 20, 3, dilation=12)
-        self.parsing_atrous3 = nn.Conv2d(256, 20, 3, dilation=18)
-        self.parsing_atrous4 = nn.Conv2d(256, 20, 3, dilation=24)
+        self.parsing_atrous1 = nn.Conv2d(256, 20, 3, dilation=6, padding=6)
+        self.parsing_atrous2 = nn.Conv2d(256, 20, 3, dilation=12, padding=12)
+        self.parsing_atrous3 = nn.Conv2d(256, 20, 3, dilation=18, padding=18)
+        self.parsing_atrous4 = nn.Conv2d(256, 20, 3, dilation=24, padding=24)
 
     def forward(self, pose_map, parsing_map, parsing_context) :
         pose_out = self.pose_remap(pose_map)
         parsing_out = self.parsing_remap(parsing_map)
 
         # Concat two remapped feature maps and parsing_context
-        parsing_out = torch.cat(pose_out, parsing_out, parsing_context)
+        parsing_out = torch.cat((pose_out, parsing_out, parsing_context), 1)
 
         parsing_out = self.parsing_refine1(parsing_out)
         parsing_out = self.parsing_refine2(parsing_out)
@@ -112,22 +112,22 @@ class PoseNet(nn.Module) :
         
         ## Get pose context 1
         self.pose_conv1 = nn.Sequential(
-                nn.Conv2d(1024, 512, 3, 1),
+                nn.Conv2d(1024, 512, 3, 1, padding=1),
                 nn.ReLU())
         self.pose_conv2 = nn.Sequential(
-                nn.Conv2d(512, 512, 3, 1),
+                nn.Conv2d(512, 512, 3, 1, padding=1),
                 nn.ReLU())
         self.pose_conv3 = nn.Sequential(
-                nn.Conv2d(512, 256, 3, 1),
+                nn.Conv2d(512, 256, 3, 1, padding=1),
                 nn.ReLU())
         self.pose_conv4 = nn.Sequential(
-                nn.Conv2d(256, 256, 3, 1),
+                nn.Conv2d(256, 256, 3, 1, padding=1),
                 nn.ReLU())
         self.pose_conv5 = nn.Sequential(
-                nn.Conv2d(256, 256, 3, 1),
+                nn.Conv2d(256, 256, 3, 1, padding=1),
                 nn.ReLU())
         self.pose_conv6 = nn.Sequential(
-                nn.Conv2d(256, 256, 3, 1),
+                nn.Conv2d(256, 256, 3, 1, padding=1),
                 nn.ReLU())
 
         ## Get pose map 1
@@ -135,7 +135,7 @@ class PoseNet(nn.Module) :
                 nn.Conv2d(256, 512, 1, 1),
                 nn.ReLU())
         self.pose_conv8 = nn.Sequential(
-                nn.Conv2d(512, 16, 3, 1))
+                nn.Conv2d(512, 16, 3, 1, padding=1))
 
 
     def forward(self, x) :
@@ -150,20 +150,21 @@ class PoseNet(nn.Module) :
 
         return pose_out, pose_context
 
+
 class ParsingNet(nn.Module) :
     def __init__(self, num_classes) :
-        super(ParsingNet, self).__init()
+        super(ParsingNet, self).__init__()
         
         self.ReLU = nn.ReLU()
 
         self.parsing_layer1 = nn.Sequential(
-                nn.Conv2d(input_size, 2048, 1, 1),
+                nn.Conv2d(1024, 2048, 1, 1),
                 nn.BatchNorm2d(2048))
         self.parsing_layer2 = nn.Sequential(
-                nn.Conv2d(2048, 512, 1, 1),
+                nn.Conv2d(1024, 512, 1, 1),
                 nn.BatchNorm2d(512),
                 nn.ReLU(),
-                nn.Conv2d(512, 512, 3, dilation=4),
+                nn.Conv2d(512, 512, 3, dilation=4, padding=4),
                 nn.BatchNorm2d(512),
                 nn.ReLU(),
                 nn.Conv2d(512, 2048, 1, 1),
@@ -172,7 +173,7 @@ class ParsingNet(nn.Module) :
                 nn.Conv2d(2048, 512, 1, 1),
                 nn.BatchNorm2d(512),
                 nn.ReLU(),
-                nn.Conv2d(512, 512, 3, dilation=4),
+                nn.Conv2d(512, 512, 3, dilation=4, padding=4),
                 nn.BatchNorm2d(512),
                 nn.ReLU(),
                 nn.Conv2d(512, 2048, 1, 1),
@@ -181,22 +182,22 @@ class ParsingNet(nn.Module) :
                 nn.Conv2d(2048, 512, 1, 1),
                 nn.BatchNorm2d(512),
                 nn.ReLU(),
-                nn.Conv2d(512, 512, 3, dilation=4),
+                nn.Conv2d(512, 512, 3, dilation=4, padding=4),
                 nn.BatchNorm2d(512),
                 nn.ReLU(),
                 nn.Conv2d(512, 2048, 1, 1),
                 nn.BatchNorm2d(2048))
 
         self.parsing_layer5 = nn.Sequential(
-                nn.Conv2d(2048, num_classes, 3, dilation=6))
-        self.parsing_layer6 = nn.Conv2d(2048, num_classes, 3, dilation=12)
-        self.parsing_layer7 = nn.Conv2d(2048, num_classes, 3, dilation=18)
-        self.parsing_layer8 = nn.Conv2d(2048, num_classes, 3, dilation=24)
+                nn.Conv2d(2048, num_classes, 3, dilation=6, padding=6))
+        self.parsing_layer6 = nn.Conv2d(2048, num_classes, 3, dilation=12, padding=12)
+        self.parsing_layer7 = nn.Conv2d(2048, num_classes, 3, dilation=18, padding=18)
+        self.parsing_layer8 = nn.Conv2d(2048, num_classes, 3, dilation=24, padding=24)
 
         self.parsing_layer9 = nn.Sequential(
-                nn.Conv2d(2048, 512, 3, 1),
+                nn.Conv2d(2048, 512, 3, 1, padding=1),
                 nn.ReLU(),
-                nn.Conv2d(512, 256, 3, 1),
+                nn.Conv2d(512, 256, 3, 1, padding=1),
                 nn.ReLU())
 
 
@@ -232,7 +233,6 @@ class ParsingNet(nn.Module) :
         parsing_out = self.parsing_layer9(parsing_out)
 
         return parsing_human, parsing_out
-
 
 
 
