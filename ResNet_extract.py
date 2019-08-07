@@ -131,9 +131,9 @@ class BackboneResNet(nn.Module) :
         self.fc1_human_c2 = nn.Conv2d(2048, self.NUM_CLASS, 3, dilation=18, padding=18)
         self.fc1_human_c3 = nn.Conv2d(2048, self.NUM_CLASS, 3, dilation=24, padding=24)
         self.res5d_branch_parsing = nn.Sequential(
-            nn.Conv2d(2048, 512, 3, stride=1),
+            nn.Conv2d(2048, 512, 3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(512, 256, 3, stride=1),
+            nn.Conv2d(512, 256, 3, stride=1, padding=1),
             nn.ReLU(),
         )
 
