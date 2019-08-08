@@ -9,6 +9,7 @@ class BackboneResNet(nn.Module) :
         self.pool1 = nn.Sequential(
             nn.Conv2d(3, 64, 7, stride=2, bias=False),
             nn.BatchNorm2d(64),
+            nn.ReLU(),
             nn.MaxPool2d(3, stride=2),
         )
         self.bn2a_branch1 = nn.Sequential(
