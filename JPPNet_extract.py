@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-class BackboneResNet(nn.Module) :
+class JPPNetModel(nn.Module) :
     def __init__(self) :
         super(BackboneResNet, self).__init__()
         self.NUM_CLASS = 20
@@ -178,8 +178,6 @@ class BackboneResNet(nn.Module) :
         branch_out = self.bn2a_branch1(operation_out)
         operation_out = self.bn2a_branch2c(operation_out)
 
-        print(branch_out.size())
-        print(operation_out.size())
         add_out = self.add(branch_out, operation_out)
         branch_out = self.bn2b_branch2c(add_out)
 
