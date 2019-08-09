@@ -5,7 +5,7 @@ class PoseRefineNet(nn.Module) :
     def __init__(self, num_classes) :
         super(PoseRefineNet, self).__init__()
         ## input size 확인
-        
+
         # 1*1 Convolution remaps the heatmaps to match the number of channels of the intermediate features
         self.pose_remap = nn.Sequential(
                 nn.Conv2d(16, 128, 1, 1),
@@ -97,7 +97,7 @@ class ParsingRefineNet(nn.Module) :
         parsing_out = self.parsing_refine2(parsing_out)
         parsing_out = self.parsing_refine3(parsing_out)
         parsing_context = self.parsing_refine4(parsing_out)
-        parsing_out = self.parsing_refine5(parsing_context) 
+        parsing_out = self.parsing_refine5(parsing_context)
         parsing_human1 = self.parsing_atrous1(parsing_out)
         parsing_human2 = self.parsing_atrous2(parsing_out)
         parsing_human3 = self.parsing_atrous3(parsing_out)
@@ -109,7 +109,7 @@ class ParsingRefineNet(nn.Module) :
 class PoseNet(nn.Module) :
     def __init__(self) :
         super(PoseNet, self).__init__()
-        
+
         ## Get pose context 1
         self.pose_conv1 = nn.Sequential(
                 nn.Conv2d(1024, 512, 3, 1, padding=1),
@@ -154,86 +154,49 @@ class PoseNet(nn.Module) :
 class ParsingNet(nn.Module) :
     def __init__(self, num_classes) :
         super(ParsingNet, self).__init__()
-        
-        self.ReLU = nn.ReLU()
-
-        self.parsing_layer1 = nn.Sequential(
-                nn.Conv2d(1024, 2048, 1, 1),
-                nn.BatchNorm2d(2048))
-        self.parsing_layer2 = nn.Sequential(
-                nn.Conv2d(1024, 512, 1, 1),
-                nn.BatchNorm2d(512),
-                nn.ReLU(),
-                nn.Conv2d(512, 512, 3, dilation=4, padding=4),
-                nn.BatchNorm2d(512),
-                nn.ReLU(),
-                nn.Conv2d(512, 2048, 1, 1),
-                nn.BatchNorm2d(2048))
-        self.parsing_layer3 = nn.Sequential(
-                nn.Conv2d(2048, 512, 1, 1),
-                nn.BatchNorm2d(512),
-                nn.ReLU(),
-                nn.Conv2d(512, 512, 3, dilation=4, padding=4),
-                nn.BatchNorm2d(512),
-                nn.ReLU(),
-                nn.Conv2d(512, 2048, 1, 1),
-                nn.BatchNorm2d(2048))
-        self.parsing_layer4 = nn.Sequential(
-                nn.Conv2d(2048, 512, 1, 1),
-                nn.BatchNorm2d(512),
-                nn.ReLU(),
-                nn.Conv2d(512, 512, 3, dilation=4, padding=4),
-                nn.BatchNorm2d(512),
-                nn.ReLU(),
-                nn.Conv2d(512, 2048, 1, 1),
-                nn.BatchNorm2d(2048))
-
-        self.parsing_layer5 = nn.Sequential(
-                nn.Conv2d(2048, num_classes, 3, dilation=6, padding=6))
-        self.parsing_layer6 = nn.Conv2d(2048, num_classes, 3, dilation=12, padding=12)
-        self.parsing_layer7 = nn.Conv2d(2048, num_classes, 3, dilation=18, padding=18)
-        self.parsing_layer8 = nn.Conv2d(2048, num_classes, 3, dilation=24, padding=24)
-
-        self.parsing_layer9 = nn.Sequential(
-                nn.Conv2d(2048, 512, 3, 1, padding=1),
-                nn.ReLU(),
-                nn.Conv2d(512, 256, 3, 1, padding=1),
-                nn.ReLU())
+        self.NUM_CLASS = num_classes
+        self.bn5a_branch1 = nn.Sequential(
+            nn.Conv2d(1024, 2048, 1, stride=1, bias=False),
+            nn.BatchNorm2d(2048),
+        )
+        self.bn5a_branch2c = nn.Sequential(
+            *self.atrousConvBn3(1024, 512, 1, 1, 512, 3, 4, 2048, 1, 1)
+        )
+        self.bn5b_branch2c = nn.Sequential(
+            *self.atrousConvBn3(2048, 512, 1, 1, 512, 3, 4, 2048, 1, 1)
+        )
+        self.bn5c_branch2c = nn.Sequential(
+            *self.atrousConvBn3(2048, 512, 1, 1, 512, 3, 4, 2048, 1, 1)
+        )
+        self.fc1_human_c0 = nn.Conv2d(2048, self.NUM_CLASS, 3, dilation=6, padding=6)
+        self.fc1_human_c1 = nn.Conv2d(2048, self.NUM_CLASS, 3, dilation=12, padding=12)
+        self.fc1_human_c2 = nn.Conv2d(2048, self.NUM_CLASS, 3, dilation=18, padding=18)
+        self.fc1_human_c3 = nn.Conv2d(2048, self.NUM_CLASS, 3, dilation=24, padding=24)
+        self.res5d_branch_parsing = nn.Sequential(
+            nn.Conv2d(2048, 512, 3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(512, 256, 3, stride=1, padding=1),
+            nn.ReLU(),
+        )
 
 
     def forward(self, x) :
-        # Parsing Layer 1
-        parsing_out1 = self.parsing_layer1(x)
-        
-        # Parsing Layer 2
-        parsing_out2 = self.parsing_layer2(x)
-        
-        # Parsing Layer 3
-        parsing_out = parsing_out1 + parsing_out2
-        parsing_out1 = self.ReLU(parsing_out)
-        parsing_out2 = self.parsing_layer3(parsing_out1)
+        branch_out = self.bn5a_branch1(x)
+        operation_out = self.bn5a_branch2c(x)
+        add_out = self.add(branch_out, operation_out)
+        branch_out = self.bn5b_branch2c(add_out)
 
-        # Parsing Layer 4
-        parsing_out = parsing_out1 + parsing_out2
-        parsing_out1 = self.ReLU(parsing_out)
-        parsing_out2 = self.parsing_layer4(parsing_out1)
+        add_out = self.add(add_out, branch_out)
+        branch_out = self.bn5c_branch2c(add_out)
 
-        # Parsing Layer 5 ~ 8
-        parsing_out = parsing_out1 + parsing_out2
-        parsing_out = self.ReLU(parsing_out)
+        add_out = self.add(add_out, branch_out)
 
-        parsing_human1 = self.parsing_layer5(parsing_out)
-        parsing_human2 = self.parsing_layer6(parsing_out)
-        parsing_human3 = self.parsing_layer7(parsing_out)
-        parsing_human4 = self.parsing_layer8(parsing_out)
+        aspp0 = self.fc1_human_c0(add_out)
+        aspp1 = self.fc1_human_c1(add_out)
+        aspp2 = self.fc1_human_c2(add_out)
+        aspp3 = self.fc1_human_c3(add_out)
 
-        parsing_human = parsing_human1 + parsing_human2 + parsing_human3 + parsing_human4
+        fc1_human_out = aspp0 + aspp1 + aspp2 + aspp3
+        res5d_branch_parsing_out = self.res5d_branch_parsing(add_out)
 
-        # Parsing Layer 9
-        parsing_out = self.parsing_layer9(parsing_out)
-
-        return parsing_human, parsing_out
-
-
-
-
+        return fc1_human_out, res5d_branch_parsing_out

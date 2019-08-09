@@ -269,22 +269,4 @@ class JPPNetModel(nn.Module) :
 
         res4b22_relu_out = self.add(add_out, branch_out)
 
-        branch_out = self.bn5a_branch1(res4b22_relu_out)
-        operation_out = self.bn5a_branch2c(res4b22_relu_out)
-        add_out = self.add(branch_out, operation_out)
-        branch_out = self.bn5b_branch2c(add_out)
-
-        add_out = self.add(add_out, branch_out)
-        branch_out = self.bn5c_branch2c(add_out)
-
-        add_out = self.add(add_out, branch_out)
-
-        aspp0 = self.fc1_human_c0(add_out)
-        aspp1 = self.fc1_human_c1(add_out)
-        aspp2 = self.fc1_human_c2(add_out)
-        aspp3 = self.fc1_human_c3(add_out)
-
-        fc1_human_out = aspp0 + aspp1 + aspp2 + aspp3
-        res5d_branch_parsing_out = self.res5d_branch_parsing(add_out)
-
-        return res4b22_relu_out, fc1_human_out, res5d_branch_parsing_out
+        return res4b22_relu_out
