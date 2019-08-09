@@ -178,6 +178,25 @@ class ParsingNet(nn.Module) :
             nn.Conv2d(512, 256, 3, stride=1, padding=1),
             nn.ReLU(),
         )
+        
+    def atrousConvBn3(self, channel_in, channel_1, kernel_1, stride_1,
+                channel_2, kernel_2, rate,
+                channel_3, kernel_3, stride_3) :
+        return [
+            nn.Conv2d(channel_in, channel_1, kernel_1, stride_1, bias=False),
+            nn.BatchNorm2d(channel_1),
+            nn.ReLU(),
+
+            nn.Conv2d(channel_1, channel_2, kernel_2, dilation=rate, bias=False, padding=rate),
+            nn.BatchNorm2d(channel_2),
+            nn.ReLU(),
+
+            nn.Conv2d(channel_2, channel_3, kernel_3, stride_3, bias=False),
+            nn.BatchNorm2d(channel_3),
+        ]
+
+    def add(self, tensor1, tensor2) :
+        return self.ReLU(torch.add(tensor1, tensor2))
 
 
     def forward(self, x) :
