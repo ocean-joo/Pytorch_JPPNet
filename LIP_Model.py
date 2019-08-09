@@ -155,6 +155,7 @@ class ParsingNet(nn.Module) :
     def __init__(self, num_classes) :
         super(ParsingNet, self).__init__()
         self.NUM_CLASS = num_classes
+        self.ReLU = nn.ReLU()
         self.bn5a_branch1 = nn.Sequential(
             nn.Conv2d(1024, 2048, 1, stride=1, bias=False),
             nn.BatchNorm2d(2048),
@@ -178,7 +179,7 @@ class ParsingNet(nn.Module) :
             nn.Conv2d(512, 256, 3, stride=1, padding=1),
             nn.ReLU(),
         )
-        
+
     def atrousConvBn3(self, channel_in, channel_1, kernel_1, stride_1,
                 channel_2, kernel_2, rate,
                 channel_3, kernel_3, stride_3) :
