@@ -135,7 +135,7 @@ class PoseNet(nn.Module) :
                 nn.Conv2d(256, 512, 1, 1),
                 nn.ReLU())
         self.pose_conv8 = nn.Sequential(
-                nn.Conv2d(512, 16, 3, 1, padding=1))
+                nn.Conv2d(512, 16, 1, 1))
 
 
     def forward(self, x) :
