@@ -13,14 +13,13 @@ from LIP_Model import PoseRefineNet, ParsingRefineNet, PoseNet, ParsingNet
 from Model import BackboneResNet
 from dataloader import LIPDataset, myTensor
 
-#os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1,2,3"
 device = "cuda" if torch.cuda.is_available else "cpu"
 #device = "cpu"
 
 N_CLASSES = 20
 INPUT_SIZE = (384, 384)
-BATCH_SIZE = 1
-BATCH_I = 1
+BATCH_SIZE = 3
 SHUFFLE = True
 RANDOM_SCALE = True
 RANDOM_MIRROR = True
@@ -70,7 +69,8 @@ for e in range(EPOCH) :
     print("[!] Training EPOCH {}".format(e))
     for i, (orig_img, segment, heatmap) in enumerate(data_loader) :
         if isinstance(orig_img, torch.Tensor) :
-            orig_img = orig_img.numpy().squeeze(0)
+            orig_img = orig_img.numpy()
+            print(orig_img.shape)
 
         orig_img = Image.fromarray(orig_img)
         segment = segment.to(device)
