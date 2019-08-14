@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
+from torch.utils.data import DataLoader
 
 import os
 import time
@@ -276,6 +277,7 @@ for e in range(EPOCH) :
                 print("[+] loss pose     ", loss_pose)
                 print("[+] reduced loss  ", reduced_loss)
         except :
+            print("error")
             continue
 
     torch.save({
@@ -284,5 +286,5 @@ for e in range(EPOCH) :
         'PoseRefineNet_state_dict': pose_refine.state_dict(),
         'ParsingRefineNet_state_dict': parsing_refine.state_dict(),
         'BackboneResNet_state_dict': backbone.state_dict(),
-        }, "./parameters/training_epoch{}.pth".format(e))
+        }, "./parameters/training_multi_epoch{}.pth".format(e))
     print("[!] Save Params epoch{}".format(e))

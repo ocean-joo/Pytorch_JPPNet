@@ -1,4 +1,4 @@
-
+import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 
@@ -9,6 +9,8 @@ SEGMENTATION_PATH = BASE_DIR + "TrainVal_parsing_annotations/train_segmentations
 REVERSE_DIR = BASE_DIR + "train_segmentations_reversed/"
 POSE_DIR = BASE_DIR + 'TrainVal_pose_annotations/heatmap/'
 IMG_MEAN = np.array((104.00698793,116.66876762,122.67891434), dtype=np.float32)
+NUM_POSE = 16
+
 
 class myTensor(object) :
     def __call__(self, pic) :
