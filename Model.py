@@ -1,20 +1,20 @@
 import torch
 import torch.nn as nn
-
+  
 class BackboneResNet(nn.Module) :
     def __init__(self) :
         super(BackboneResNet, self).__init__()
         self.NUM_CLASS = 20
         self.ReLU = nn.ReLU()
         self.pool1 = nn.Sequential(
-            nn.Conv2d(3, 64, 7, stride=2, bias=False),
-            nn.BatchNorm2d(64),
+            nn.Conv2d(3, 64, 7, stride=2, bias=False, padding=3),
+            nn.BatchNorm2d(64, eps=0.001, momentum=0.99),
             nn.ReLU(),
             nn.MaxPool2d(3, stride=2),
         )
         self.bn2a_branch1 = nn.Sequential(
             nn.Conv2d(64, 256, 1, stride=1, bias=False),
-            nn.BatchNorm2d(256),
+            nn.BatchNorm2d(256, eps=0.001, momentum=0.99),
         )
         self.bn2a_branch2c = nn.Sequential(
             *self.convBn3(64, 64, 1, 1, 64, 3, 1, 256, 1, 1)
@@ -27,7 +27,7 @@ class BackboneResNet(nn.Module) :
         )
         self.bn3a_branch1 = nn.Sequential(
             nn.Conv2d(256, 512, 1, stride=2, bias=False),
-            nn.BatchNorm2d(512),
+            nn.BatchNorm2d(512, eps=0.001, momentum=0.99),
         )
         self.bn3a_branch2c = nn.Sequential(
             *self.convBn3(256, 128, 1, 2, 128, 3, 1, 512, 1, 1)
@@ -43,7 +43,7 @@ class BackboneResNet(nn.Module) :
         )
         self.bn4a_branch1 = nn.Sequential(
             nn.Conv2d(512, 1024, 1, stride=1, bias=False),
-            nn.BatchNorm2d(1024),
+            nn.BatchNorm2d(1024, eps=0.001, momentum=0.99),
         )
         self.bn4a_branch2c = nn.Sequential(
             *self.atrousConvBn3(512, 256, 1, 1, 256, 3, 2, 1024, 1, 1)
@@ -120,15 +120,15 @@ class BackboneResNet(nn.Module) :
                 channel_3, kernel_3, stride_3) :
         return [
             nn.Conv2d(channel_in, channel_1, kernel_1, stride_1, bias=False),
-            nn.BatchNorm2d(channel_1),
+            nn.BatchNorm2d(channel_1, eps=0.001, momentum=0.99),
             nn.ReLU(),
 
             nn.Conv2d(channel_1, channel_2, kernel_2, stride_2, bias=False, padding=1),
-            nn.BatchNorm2d(channel_2),
+            nn.BatchNorm2d(channel_2, eps=0.001, momentum=0.99),
             nn.ReLU(),
 
             nn.Conv2d(channel_2, channel_3, kernel_3, stride_3, bias=False),
-            nn.BatchNorm2d(channel_3),
+            nn.BatchNorm2d(channel_3, eps=0.001, momentum=0.99),
         ]
 
     def atrousConvBn3(self, channel_in, channel_1, kernel_1, stride_1,
@@ -136,15 +136,15 @@ class BackboneResNet(nn.Module) :
                 channel_3, kernel_3, stride_3) :
         return [
             nn.Conv2d(channel_in, channel_1, kernel_1, stride_1, bias=False),
-            nn.BatchNorm2d(channel_1),
+            nn.BatchNorm2d(channel_1, eps=0.001, momentum=0.99),
             nn.ReLU(),
 
             nn.Conv2d(channel_1, channel_2, kernel_2, dilation=rate, bias=False, padding=rate),
-            nn.BatchNorm2d(channel_2),
+            nn.BatchNorm2d(channel_2, eps=0.001, momentum=0.99),
             nn.ReLU(),
 
             nn.Conv2d(channel_2, channel_3, kernel_3, stride_3, bias=False),
-            nn.BatchNorm2d(channel_3),
+            nn.BatchNorm2d(channel_3, eps=0.001, momentum=0.99),
         ]
 
     def add(self, tensor1, tensor2) :
